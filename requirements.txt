@@ -1,0 +1,4 @@
+kafka-python
+opencv-python
+Flask
+tensorflow==2.7.0
