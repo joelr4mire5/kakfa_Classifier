@@ -19,10 +19,13 @@ train_ds, val_ds = tf.keras.utils.image_dataset_from_directory(
     batch_size=batch_size,
 )
 
+print(train_ds.take(1))
+
 
 
 
 plt.figure(figsize=(10, 10))
+
 for images, labels in train_ds.take(1):
     for i in range(9):
         ax = plt.subplot(3, 3, i + 1)
@@ -31,10 +34,10 @@ for images, labels in train_ds.take(1):
         # Get the class index from the one-hot encoded label tensor
         class_index = tf.argmax(labels[i]).numpy()
         plt.title(f"Class: {class_index}")
-        
         plt.axis("off")
-        
-        
+        plt.show()
+    
+
 
 data_augmentation = keras.Sequential(
     [
@@ -44,6 +47,8 @@ data_augmentation = keras.Sequential(
 )
 
 
+
+
 plt.figure(figsize=(10, 10))
 for images, _ in train_ds.take(1):
     for i in range(9):
@@ -51,12 +56,13 @@ for images, _ in train_ds.take(1):
         ax = plt.subplot(3, 3, i + 1)
         plt.imshow(augmented_images[0].numpy().astype("uint8"))
         plt.axis("off")
+        
 
 
-inputs = keras.Input(shape=image_size + (3,))
+augmented_train_ds = train_ds.map(lambda x, y: (data_augmentation(x, training=True), y))
+print(augmented_train_ds)
 
-x = data_augmentation(inputs)
-x = layers.Rescaling(1./255)(x)
+
 
 
 # Apply `data_augmentation` to the training images.
@@ -121,14 +127,14 @@ model = make_model(input_shape=image_size + (3,), num_classes=4)
 keras.utils.plot_model(model, show_shapes=True)
 
 
-epochs = 10
+epochs = 3
 
 callbacks = [
     keras.callbacks.ModelCheckpoint("save_at_{epoch}.keras"),
 ]
 model.compile(
     optimizer=keras.optimizers.Adam(1e-3),
-    loss="binary_crossentropy",
+    loss="CategoricalCrossentropy",
     metrics=["accuracy"],
 )
 
