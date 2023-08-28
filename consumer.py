@@ -9,14 +9,14 @@ from PIL import Image
 import tensorflow as tf
 
 
-consumer = KafkaConsumer('fight_moves', bootstrap_servers='localhost:9092')
-""" model = keras.models.load_model('save_at_1.keras')
- """
+consumer = KafkaConsumer('quickstart-events', bootstrap_servers='localhost:9092')
+model = keras.models.load_model('save_at_1.keras')
+
 app = Flask(__name__)
 
 
 # Folder to save the images
-image_folder = 'New'
+image_folder = 'predictions'
 os.makedirs(image_folder, exist_ok=True)  # Create the folder if it doesn't exist
 
 # Counter for naming the images
@@ -41,23 +41,30 @@ def kafkastream():
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + message.value + b'\r\n\r\n')
         
-        """ try:
+        try:
             
             
-            img_path = os.path.join(image_folder, f'image_{image_counter}.jpg')
+            img_path = os.path.join(image_folder,f'image_{image_counter}.jpg')
+            print(img_path)
             img = keras.utils.load_img(img_path, target_size=(180, 180))
             img_array = keras.utils.img_to_array(img)
             img_array = tf.expand_dims(img_array, 0)  # Create batch axis
+            
+            
             predictions = model.predict(img_array)
-            score = float(predictions[0])
-            print(f"This image is {100 * (1 - score):.2f}% Bakat an maki and {100 * score:.2f}% Monton.")
 
-
+            class_labels = ["None", "paper", "rock", "scissors"]
+            predictions_dict = dict(zip(class_labels, predictions[0]))  
+            sorted_predictions = sorted(predictions_dict.items(), key=lambda x: x[1], reverse=True)
+            print(sorted_predictions)
+            top_prediction_label = sorted_predictions[0][0]
+            print(f"This image is {top_prediction_label}")
+            
+            #print(f"This image is" + list(sorted_predictions.keys())[0])
             
 
-
         except Exception as e:
-            print("Error during prediction",str(e)) """
+            print("Error during prediction",str(e))
             
 
 

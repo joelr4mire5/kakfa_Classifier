@@ -6,7 +6,7 @@ from kafka import KafkaProducer
 from kafka.errors import KafkaError
 
 producer = KafkaProducer(bootstrap_servers='localhost:9092')
-topic = 'fight_moves'
+topic = 'quickstart-events'
 
 
 def emit_video(path_to_video):
